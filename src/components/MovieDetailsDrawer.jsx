@@ -23,13 +23,21 @@ export const MovieDetailsDrawer = ({
 }) => {
   const backdropUrl = getImageUrl(movie?.backdrop_path || movie?.poster_path);
   const theme = useTheme();
-  const trailerUrl = movie?.trailer?.key ? `https://www.youtube.com/watch?v=${movie.trailer.key}` : "";
+  const trailerUrl = movie?.trailer?.key
+    ? `https://www.youtube.com/watch?v=${movie.trailer.key}`
+    : "";
   const continueWatchingIds = [20526, 673, 68734, 76341];
   const showContinueWatching = movie && continueWatchingIds.includes(movie.id);
   const showWatchNow = movie && !continueWatchingIds.includes(movie.id);
 
   return (
-    <Drawer open={isOpen} onClose={onClose} direction="right" size="min(52rem, 100vw)" className="movie-details-drawer">
+    <Drawer
+      open={isOpen}
+      onClose={onClose}
+      direction="right"
+      size="min(52rem, 100vw)"
+      className="movie-details-drawer"
+    >
       <DrawerShell>
         <DrawerHeader>
           <DrawerEyebrow>{APP_COPY.drawerTitle}</DrawerEyebrow>
@@ -38,15 +46,17 @@ export const MovieDetailsDrawer = ({
           </CloseButton>
         </DrawerHeader>
 
-        {isLoading ? (
-          <StateMessage>Loading movie details...</StateMessage>
-        ) : null}
+        {isLoading ? <StateMessage>Loading movie details...</StateMessage> : null}
 
         {!isLoading && error ? <StateMessage>{error}</StateMessage> : null}
 
         {!isLoading && movie ? (
           <>
-            <HeroImage style={{ backgroundImage: `linear-gradient(180deg, ${theme.alpha.dark06} 0%, ${theme.alpha.dark72} 100%), url(${backdropUrl})` }}>
+            <HeroImage
+              style={{
+                backgroundImage: `linear-gradient(180deg, ${theme.alpha.dark06} 0%, ${theme.alpha.dark72} 100%), url(${backdropUrl})`,
+              }}
+            >
               <ScoreBadge>
                 <StarFilled />
                 {movie.vote_average ? movie.vote_average.toFixed(1) : "NR"}
@@ -78,7 +88,6 @@ export const MovieDetailsDrawer = ({
               <Overview>{movie.overview || APP_COPY.noSynopsis}</Overview>
 
               <ActionRow>
-
                 {trailerUrl ? (
                   <>
                     {showContinueWatching && (
@@ -111,7 +120,9 @@ export const MovieDetailsDrawer = ({
                     {movie.cast.map((person) => (
                       <CastCard key={person.id}>
                         <CastAvatar
-                          style={{ backgroundImage: `linear-gradient(180deg, ${theme.alpha.dark06} 0%, ${theme.alpha.dark32} 100%), url(${getImageUrl(person.profile_path)})` }}
+                          style={{
+                            backgroundImage: `linear-gradient(180deg, ${theme.alpha.dark06} 0%, ${theme.alpha.dark32} 100%), url(${getImageUrl(person.profile_path)})`,
+                          }}
                         />
                         <div>
                           <CastName>{person.name}</CastName>
@@ -146,17 +157,24 @@ const ContinueWatchingButton = styled.button`
   gap: 0.8rem;
   padding: 1rem 1.4rem;
   border-radius: ${({ theme }) => theme.borderRadius.md};
-  outline: 2px solid ${({ theme }) => theme.accent.strong};
-  color: ${({ theme }) => theme.accent.strong};
+  background: ${({ theme }) => theme.alpha.white06};
+  color: ${({ theme }) => theme.text.primary};
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: 700;
-  border: none;
+  border: 1px solid ${({ theme }) => theme.alpha.white10};
   cursor: pointer;
   margin-right: 1rem;
-  transition: background 180ms, color 180ms;
+  backdrop-filter: blur(14px) saturate(125%);
+  -webkit-backdrop-filter: blur(14px) saturate(125%);
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms;
+
   &:hover {
-    background: ${({ theme }) => theme.accent.strong};
-    color: ${({ theme }) => theme.misc.white};
+    background: ${({ theme }) => theme.alpha.white12};
+    border-color: ${({ theme }) => theme.alpha.white20};
+    color: ${({ theme }) => theme.text.primary};
   }
 `;
 
@@ -166,7 +184,11 @@ const DrawerShell = styled.div`
   scrollbar-width: none;
   -ms-overflow-style: none;
   padding: 2rem;
-  background: linear-gradient(180deg, ${({ theme }) => theme.alpha.dark98} 0%, ${({ theme }) => theme.alpha.dark98} 100%);
+  background: linear-gradient(
+    180deg,
+    ${({ theme }) => theme.alpha.dark98} 0%,
+    ${({ theme }) => theme.alpha.dark98} 100%
+  );
 
   &::-webkit-scrollbar {
     width: 0;
@@ -301,12 +323,22 @@ const ActionLink = styled.a`
   gap: 0.8rem;
   padding: 1rem 1.4rem;
   border-radius: ${({ theme }) => theme.borderRadius.md};
-  background: linear-gradient(135deg, ${({ theme }) => theme.accent.strong} 0%, ${({ theme }) => theme.accent.soft} 100%);
-  color: ${({ theme }) => theme.misc.white};
+  background: ${({ theme }) => theme.alpha.white08};
+  color: ${({ theme }) => theme.text.primary};
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: 700;
-  transition: background 180ms, color 180ms;
+  border: 1px solid ${({ theme }) => theme.alpha.white10};
+  backdrop-filter: blur(14px) saturate(125%);
+  -webkit-backdrop-filter: blur(14px) saturate(125%);
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms;
+
   &:hover {
+    background: ${({ theme }) => theme.alpha.white12};
+    border-color: ${({ theme }) => theme.alpha.white20};
+    color: ${({ theme }) => theme.text.primary};
     text-decoration: none;
   }
 `;

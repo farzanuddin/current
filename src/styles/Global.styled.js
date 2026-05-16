@@ -2,7 +2,7 @@ import * as styled from "styled-components";
 
 export const GlobalStyles = styled.createGlobalStyle`
   html {
-    font-size: 62.5%;
+    font-size: 65%;
     font-family: ${({ theme }) => theme.fonts.body};
     box-sizing: border-box;
     scroll-behavior: smooth;
@@ -22,11 +22,10 @@ export const GlobalStyles = styled.createGlobalStyle`
     min-height: 100vh;
     overflow: hidden;
     padding: 0 0;
-    background:
-      radial-gradient(circle at top, ${({ theme }) => theme.alpha.sky54} 0%, transparent 30%),
-      radial-gradient(circle at bottom left, ${({ theme }) => theme.alpha.accent24} 0%, transparent 26%),
-      ${({ theme }) => theme.background};
+    background: ${({ theme }) => theme.background};
     color: ${({ theme }) => theme.text.primary};
+    -webkit-font-smoothing: antialiased;
+    text-rendering: geometricPrecision;
   }
 
   @media (max-width: 1100px) {
@@ -87,6 +86,5 @@ export const GlobalStyles = styled.createGlobalStyle`
   h3,
   h4 {
     overflow-wrap: break-word;
-    hyphens: auto;
   }
 `;

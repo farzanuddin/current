@@ -1,6 +1,6 @@
 import styled, { useTheme } from "styled-components";
 import PropTypes from "prop-types";
-import { LoadingOutlined, SearchOutlined } from "@ant-design/icons";
+import { LoadingOutlined } from "@ant-design/icons";
 import { getImageUrl } from "../api";
 import { APP_COPY } from "../constants";
 
@@ -79,10 +79,13 @@ const Panel = styled.div`
   scrollbar-width: none;
   -ms-overflow-style: none;
   border-radius: ${({ theme }) => theme.borderRadius.md};
-  background: ${({ theme }) => theme.alpha.navy88};
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(30, 40, 43, 0.94);
+  backdrop-filter: blur(20px) saturate(125%);
+  -webkit-backdrop-filter: blur(20px) saturate(125%);
   border: 1px solid ${({ theme }) => theme.alpha.white06};
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 1.2rem 3rem rgba(0, 0, 0, 0.32);
 
   &::-webkit-scrollbar {
     width: 0;
@@ -120,7 +123,7 @@ const ResultButton = styled.button`
   text-align: left;
 
   &:hover {
-    background: ${({ theme }) => theme.alpha.white06};
+    background: rgba(255, 255, 255, 0.09);
   }
 `;
 

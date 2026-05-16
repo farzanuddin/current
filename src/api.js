@@ -53,9 +53,9 @@ export const getDataFromAPI = async (endpoint, params = {}) => {
   }
 };
 
-const mapGenreIdsToNames = async (genreIds) => {
+const mapGenreIdsToNames = async (genreIds, mediaType = "movie") => {
   try {
-    const genreResponse = await getDataFromAPI("/genre/movie/list");
+    const genreResponse = await getDataFromAPI(`/genre/${mediaType}/list`);
 
     const genreMap = new Map(genreResponse?.genres?.map((genre) => [genre.id, genre.name]));
 
@@ -71,7 +71,7 @@ const mapGenreIdsToNames = async (genreIds) => {
   }
 };
 
-export const getMoviesWithGenres = async (endpoint, options = {}) => {
+export const getMoviesWithGenres = async (endpoint, options = {}, mediaType = "movie") => {
   try {
     const response = await getDataFromAPI(endpoint, options);
 
@@ -80,7 +80,7 @@ export const getMoviesWithGenres = async (endpoint, options = {}) => {
     }
 
     const genreIds = [...new Set(response.results.flatMap((movie) => movie.genre_ids))];
-    const mappedGenres = await mapGenreIdsToNames(genreIds);
+    const mappedGenres = await mapGenreIdsToNames(genreIds, mediaType);
     const moviesWithGenres = response?.results?.map((movie) => ({
       ...movie,
       genres: movie?.genre_ids?.map((genreId) =>
@@ -110,22 +110,95 @@ export const searchMovies = async (query) => {
   return response?.results?.filter((movie) => movie.poster_path || movie.backdrop_path) || [];
 };
 
-export const getMovieDetails = async (movieId) => {
-  if (!movieId) {
+const normalizeSearchResult = (item, mediaType) => ({
+  ...item,
+  media_type: mediaType,
+  title: item.title || item.name,
+  release_date: item.release_date || item.first_air_date,
+});
+
+export const searchContent = async (query, mediaFilter = "Movies") => {
+  const sanitizedQuery = query?.trim();
+
+  if (!sanitizedQuery) {
+    return [];
+  }
+
+  if (mediaFilter === "Shows") {
+    const response = await getMoviesWithGenres(
+      "/search/tv",
+      {
+        query: sanitizedQuery,
+        include_adult: false,
+      },
+      "tv"
+    );
+
+    return (
+      response?.results
+        ?.filter((show) => show.poster_path || show.backdrop_path)
+        ?.map((show) => normalizeSearchResult(show, "tv")) || []
+    );
+  }
+
+  if (mediaFilter === "Anime") {
+    const [movieResponse, tvResponse] = await Promise.all([
+      getMoviesWithGenres(
+        "/search/movie",
+        {
+          query: sanitizedQuery,
+          include_adult: false,
+        },
+        "movie"
+      ),
+      getMoviesWithGenres(
+        "/search/tv",
+        {
+          query: sanitizedQuery,
+          include_adult: false,
+        },
+        "tv"
+      ),
+    ]);
+
+    return [
+      ...(movieResponse?.results || []).map((movie) => normalizeSearchResult(movie, "movie")),
+      ...(tvResponse?.results || []).map((show) => normalizeSearchResult(show, "tv")),
+    ].filter(
+      (item) =>
+        (item.poster_path || item.backdrop_path) &&
+        (item.genre_ids?.includes(16) || item.origin_country?.includes("JP"))
+    );
+  }
+
+  return (await searchMovies(sanitizedQuery)).map((movie) => normalizeSearchResult(movie, "movie"));
+};
+
+export const getContentDetails = async (item) => {
+  if (!item?.id) {
     return null;
   }
 
-  const response = await getDataFromAPI(`/movie/${movieId}`, {
+  const mediaType = item.media_type === "tv" ? "tv" : "movie";
+  const response = await getDataFromAPI(`/${mediaType}/${item.id}`, {
     append_to_response: "credits,videos",
   });
 
+  const runtime = mediaType === "tv" ? response?.episode_run_time?.[0] : response?.runtime;
+
   return {
     ...response,
+    media_type: mediaType,
+    title: response?.title || response?.name,
+    release_date: response?.release_date || response?.first_air_date,
+    runtime,
     genres: response?.genres || [],
     cast: response?.credits?.cast?.slice(0, 6) || [],
     trailer: response?.videos?.results?.find((video) => video.site === "YouTube" && video.type === "Trailer") || null,
   };
 };
+
+export const getMovieDetails = async (movieId) => getContentDetails({ id: movieId, media_type: "movie" });
 
 export const getImageUrl = (path) => {
   if (!path) {

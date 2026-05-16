@@ -1,32 +1,63 @@
-## Environment Variables
+# Current
 
-Use [.env.example](/Users/farzan/projects/movietime/.env.example) as the template for your local `.env` file, then add your TMDB bearer token:
+A cinematic movie and TV discovery dashboard built with Vite and React. Search TMDB content, browse
+featured movies, filter by media type, and open rich detail drawers with cast, metadata, trailers,
+and continue-watching UI.
 
-```bash
-VITE_TMDB_AUTH_KEY=your_tmdb_bearer_token
-```
+[https://farzanuddin.github.io/current](https://farzanuddin.github.io/current/)
 
-The `.env.example` file is safe to commit because it only contains the variable name and a placeholder value. Your real `.env` file should stay local and untracked.
+![preview](./.github/assets/demo.png)
 
-This removes the token from the repository, but it does not truly hide it in a browser-only app. Any token used by frontend code can still be inspected in the network tab or bundled source. To actually keep the token secret, move TMDB calls behind a backend or serverless proxy you control.
+## Objective
 
+The goal of this project was to build a polished streaming-dashboard interface while exploring a few
+frontend concepts: a dark glassy UI with responsive card-mode layouts and live requests to the
+**TMDB API**,
 
-## Dependencies Utilized
+## Features
 
-vite: A high speed development environment tailored for contemporary web projects. Used to bootstrap the application quickly.
+- **Live TMDB data** — fetches trending, discovery, search, details, credits, videos, and images
+- **Movie details drawer** — opens a right-side panel with hero artwork, metadata, genres, overview,
+  cast, and trailer actions
+- **Responsive layout** — mobile hamburger navigation, sticky top search, and contained card mode on
+  larger screens
 
-ant design/icons: A collection of beautifully crafted icons from Ant Design, enhancing the visual appeal of the project. Used to quickly get icons wherever necessary.
+## Tech Stack
 
-axios: A promise based HTTP client for the browser and Node.js, simplifying data fetching and manipulation.
+| Technology                                                                   | Version | Role                       |
+| ---------------------------------------------------------------------------- | :-----: | -------------------------- |
+| [React](https://react.dev/)                                                  | ^18.2.0 | UI framework               |
+| [Vite](https://vitejs.dev/)                                                  | ^5.0.8  | Build tool & dev server    |
+| [Styled Components](https://styled-components.com/)                          | ^6.1.8  | Component-scoped styling   |
+| [Axios](https://axios-http.com/)                                             | ^1.6.5  | TMDB API requests          |
+| [Ant Design Icons](https://ant.design/components/icon/)                      | ^5.2.6  | Icon system                |
+| [React Modern Drawer](https://github.com/Farzin-Firoozi/react-modern-drawer) | ^1.2.2  | Slide-out drawer UI        |
+| [PropTypes](https://github.com/facebook/prop-types)                          | ^15.8.1 | Runtime prop type checking |
+| [ESLint](https://eslint.org/)                                                | ^8.55.0 | Code linting               |
 
-dayjs: A minimalist JavaScript library for handling dates and times, providing a straightforward and efficient API. Used sparingly for date manipulation
+## TMDB API Note
 
-lodash: A utility library delivering functions for common programming tasks, promoting code readability and efficiency. Used primarily for convenience functions including debounce.
+This app uses a TMDB bearer token from `VITE_TMDB_AUTH_KEY`. Because this is a browser-only app, the
+token is included in client-side requests and should not be treated as a private secret.
 
-react:A JavaScript library for building user interfaces, forming the foundation of the project's front end structure.
+## Getting Started
 
-react dom:The entry point to the React DOM library, facilitating interactions between React and the Document Object Model (DOM).
+1. Install dependencies:
 
-react modern drawer: A flexible and customizable modern drawer component for React, enhancing the user interface with modern design patterns. Used instead of implementing an entire drawer myself, which could have been done but was unecessarily time consuming.
+   ```bash
+   npm install
+   ```
 
-styled components: A popular CSS in JS library enabling the creation of styled React components with dynamic styles based on JavaScript code. An experiment to see how other CSS in JS libraries stack up, mostly as a learning opportunity.
+2. Create your local environment file:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   Open `.env` and replace `your_tmdb_bearer_token` with a TMDB API bearer token.
+
+3. Start the dev server:
+
+   ```bash
+   npm run dev
+   ```

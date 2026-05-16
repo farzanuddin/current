@@ -1,185 +1,236 @@
-import styled, { useTheme } from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { APP_COPY } from "../constants";
 import PropTypes from "prop-types";
-import {
-  DownloadOutlined,
-  EllipsisOutlined,
-  PlayCircleFilled,
-  StarFilled,
-} from "@ant-design/icons";
+import { HeartOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import { getImageUrl } from "../api";
 
-export const HeroBanner = ({ movie, badge, primaryAction, onOpenDetails }) => {
+const formatRuntime = (runtime) => {
+  if (!runtime) return null;
+
+  if (runtime < 60) {
+    return `${runtime}min`;
+  }
+
+  return `${Math.floor(runtime / 60)}h ${runtime % 60}min`;
+};
+
+const heroReveal = keyframes`
+  0% {
+    opacity: 0;
+    transform: translateX(1.2rem) scale(1.025);
+    filter: saturate(0.86) brightness(0.86);
+    background-size: 106%;
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    filter: saturate(1) brightness(1);
+    background-size: 100%;
+  }
+`;
+
+const contentReveal = keyframes`
+  0% {
+    opacity: 0;
+    transform: translateY(0.8rem);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
+export const HeroBanner = ({ movie, onOpenDetails }) => {
   const imageUrl = getImageUrl(movie?.backdrop_path || movie?.poster_path);
-  const theme = useTheme();
-  const genres = movie?.genres?.filter(Boolean).slice(0, 3) || [];
-  const releaseYear = movie?.release_date?.slice(0, 4) || "Now";
-  const rating = movie?.vote_average ? movie.vote_average.toFixed(1) : null;
+  const genres = movie?.genres?.filter((genre) => genre?.name).slice(0, 3) || [];
+  const runtime = formatRuntime(movie?.runtime);
 
   return (
-    <Hero style={{ backgroundImage: `linear-gradient(90deg, ${theme.alpha.dark98} 0%, ${theme.alpha.dark72} 48%, ${theme.alpha.dark06} 100%), url(${imageUrl})` }}>
-      <TopMetaRow>
-        <Badge>{badge}</Badge>
-        <TagRow>
-          {genres.map((genre) => (
-            <Tag key={genre.id}>{genre.name}</Tag>
-          ))}
-        </TagRow>
-      </TopMetaRow>
-      <Title>{movie?.title || APP_COPY.heroDefaultTitle}</Title>
-      <Summary>{movie?.overview || APP_COPY.heroDefaultSummary}</Summary>
-      <MetaRow>
-        <MetaPill>{releaseYear}</MetaPill>
-        {rating ? (
-          <MetaPill>
-            <StarFilled />
-            {rating}
-          </MetaPill>
-        ) : null}
-      </MetaRow>
-      <ActionRow>
-        <PrimaryButton onClick={() => onOpenDetails(movie)}>
-          <PlayCircleFilled />
-          <span>{primaryAction}</span>
-        </PrimaryButton>
-        <IconActionButton aria-label={APP_COPY.downloadLabel}>
-          <DownloadOutlined />
-        </IconActionButton>
-        <IconActionButton aria-label={APP_COPY.moreOptionsLabel}>
-          <EllipsisOutlined />
-        </IconActionButton>
-      </ActionRow>
+    <Hero style={{ backgroundImage: `url(${imageUrl})` }}>
+      <HeroOverlay />
+      <TagRow>
+        {runtime ? <Tag>{runtime}</Tag> : null}
+        {genres.map((genre) => (
+          <Tag key={genre.id}>{genre.name}</Tag>
+        ))}
+      </TagRow>
+      <HeroContent>
+        <DetailsButton onClick={() => onOpenDetails(movie)}>
+          <InfoCircleOutlined />
+          <span>
+            <strong>{movie?.title || APP_COPY.heroDefaultTitle}</strong>
+            View details
+          </span>
+        </DetailsButton>
+      </HeroContent>
+      <HeartButton aria-label="Add to favorites">
+        <HeartOutlined />
+      </HeartButton>
     </Hero>
   );
 };
 
 HeroBanner.propTypes = {
   movie: PropTypes.object,
-  badge: PropTypes.string,
-  primaryAction: PropTypes.string,
   onOpenDetails: PropTypes.func,
 };
 
 const Hero = styled.section`
+  position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 1rem;
-  min-height: clamp(26rem, 44vh, 34rem);
-  padding: clamp(2.2rem, 3vw, 3rem);
-  border-radius: ${({ theme }) => theme.borderRadius.md};
+  justify-content: flex-end;
+  min-height: clamp(25rem, 46vh, 36rem);
+  border-radius: ${({ theme }) => theme.borderRadius.xl};
   background-color: ${({ theme }) => theme.surface.elevated};
-  background-position: center center;
+  background-position: center 32%;
   background-repeat: no-repeat;
   background-size: cover;
-  background-clip: padding-box;
-  background-origin: padding-box;
-  border: 1px solid ${({ theme }) => theme.alpha.white06};
   overflow: hidden;
+  border: 0;
+  box-shadow: ${({ theme }) => theme.shadow.soft};
+  animation: ${heroReveal} 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
 
-  @media (max-width: 720px) {
-    min-height: 28rem;
-    padding: 2.4rem;
+  @media (max-width: 900px) {
+    min-height: 24rem;
     background-position: center top;
   }
 `;
 
-const Badge = styled.span`
-  padding: 0.65rem 1rem;
-  border-radius: ${({ theme }) => theme.borderRadius.pill};
-  background: ${({ theme }) => theme.alpha.gold18};
-  color: ${({ theme }) => theme.misc.gold};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: 700;
-  flex-shrink: 0;
+const HeroOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.03) 0%,
+    transparent 35%,
+    rgba(0, 0, 0, 0.34) 62%,
+    rgba(0, 0, 0, 0.86) 100%
+  );
+  pointer-events: none;
 `;
 
-const TopMetaRow = styled.div`
+const HeroContent = styled.div`
+  position: relative;
+  z-index: 2;
+  padding: 1.45rem;
   display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 1rem;
+  animation: ${contentReveal} 700ms 110ms cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  @media (max-width: 900px) {
+    padding: 1.6rem;
+  }
 `;
 
 const TagRow = styled.div`
+  position: absolute;
+  top: 1.45rem;
+  left: 1.45rem;
+  z-index: 3;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.8rem;
+  gap: 0.7rem;
+  align-items: center;
+  animation: ${contentReveal} 640ms 90ms cubic-bezier(0.22, 1, 0.36, 1) both;
 `;
 
 const Tag = styled.span`
-  padding: 0.55rem 0.9rem;
+  padding: 0.38rem 0.75rem;
   border-radius: ${({ theme }) => theme.borderRadius.pill};
-  background: ${({ theme }) => theme.alpha.white06};
+  background: rgba(255, 255, 255, 0.24);
   color: ${({ theme }) => theme.text.primary};
   font-size: ${({ theme }) => theme.fontSizes.sm};
-`;
-
-const Title = styled.h1`
-  max-width: 56rem;
-  color: ${({ theme }) => theme.text.primary};
-  overflow-wrap: anywhere;
-`;
-
-const Summary = styled.p`
-  max-width: 56rem;
-  color: ${({ theme }) => theme.text.secondary};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  overflow-wrap: anywhere;
-`;
-
-const MetaRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.8rem;
-`;
-
-const MetaPill = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.65rem 1rem;
-  border-radius: ${({ theme }) => theme.borderRadius.pill};
-  background: ${({ theme }) => theme.alpha.white06};
-  color: ${({ theme }) => theme.text.primary};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: 700;
-`;
-
-const ActionRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.8rem;
-  margin-top: 0.2rem;
-`;
-
-const PrimaryButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: 0.9rem;
-  padding: 0.95rem 1.35rem;
-  border-radius: ${({ theme }) => theme.borderRadius.md};
-  background: linear-gradient(135deg, ${({ theme }) => theme.accent.strong} 0%, ${({ theme }) => theme.accent.soft} 100%);
-  color: ${({ theme }) => theme.misc.white};
-  font-weight: 700;
-`;
-
-const IconActionButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 4.4rem;
-  height: 4.2rem;
-  border-radius: ${({ theme }) => theme.borderRadius.md};
-  background: ${({ theme }) => theme.alpha.white06};
-  color: ${({ theme }) => theme.text.primary};
-  border: 1px solid ${({ theme }) => theme.alpha.white12};
+  font-weight: 800;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    transform 150ms ease;
 
   &:hover {
-    background: ${({ theme }) => theme.alpha.white12};
+    background: rgba(255, 255, 255, 0.34);
+    transform: translateY(-1px);
+  }
+`;
+
+const DetailsButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: ${({ theme }) => theme.text.primary};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  font-weight: 700;
+  border: 0;
+  cursor: pointer;
+  width: fit-content;
+  transition: color 150ms ease;
+
+  &:hover {
+    color: ${({ theme }) => theme.accent.primary};
   }
 
   svg {
+    display: grid;
+    place-items: center;
+    width: 3.7rem;
+    height: 3.7rem;
+    padding: 0.7rem;
+    border-radius: ${({ theme }) => theme.borderRadius.circle};
+    background: rgba(255, 255, 255, 0.24);
+    color: ${({ theme }) => theme.text.primary};
+    font-size: 1.6rem;
+    box-sizing: border-box;
+  }
+
+  span {
+    display: grid;
+    gap: 0.1rem;
+    justify-items: start;
+    text-align: left;
+  }
+
+  span > :not(strong) {
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    font-weight: 500;
+    color: ${({ theme }) => theme.text.secondary};
+  }
+
+  strong {
+    color: ${({ theme }) => theme.text.primary};
     font-size: ${({ theme }) => theme.fontSizes.lg};
+  }
+`;
+
+const HeartButton = styled.button`
+  position: absolute;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: ${({ theme }) => theme.borderRadius.circle};
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  color: ${({ theme }) => theme.text.primary};
+  font-size: 1.3rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    color 150ms ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ff4d6a;
   }
 `;
