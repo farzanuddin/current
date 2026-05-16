@@ -11,8 +11,6 @@ export const SIDEBAR_PRIMARY_LINKS = [
   { key: "support", label: "Support", icon: "support" },
 ];
 
-export const SIDEBAR_LIBRARY_LINKS = [];
-
 export const CATEGORY_PILLS = [
   { key: "trending", label: "Trending" },
   { key: "adventure", label: "Adventure" },
@@ -25,11 +23,6 @@ export const CATEGORY_PILLS = [
 ];
 
 export const DASHBOARD_SECTIONS = [
-  {
-    key: "continueWatching",
-    title: "Continue Watching",
-    endpoint: "/movie/popular",
-  },
   {
     key: "actionMovies",
     title: "Action Movies",
@@ -49,12 +42,7 @@ export const APP_COPY = {
   searchPlaceholder: "Search for movies, shows, and more...",
   searchHint: "Type at least 2 characters to search TMDB live.",
   searchEmpty: "No matching films found.",
-  heroPrimaryAction: "Watch Now",
-  heroPlayTrailer: "Play trailer",
   sidebarLibraryTitle: "Continue Watching",
-  settingsLabel: "Settings",
-  logoutLabel: "Logout",
-  searchLabel: "Search",
   searchingStatus: "Searching TMDB...",
   drawerTitle: "Movie details",
   noSynopsis: "No synopsis available.",
@@ -62,11 +50,7 @@ export const APP_COPY = {
   watchNowLabel: "Watch Now",
   searchAriaLabel: "Search movies",
   closeDetailsAria: "Close movie details",
-  moreOptionsLabel: "More options",
-  downloadLabel: "Download",
   heroDefaultTitle: "Cinema, curated beautifully",
-  heroDefaultSummary:
-    "Discover the most talked-about stories, surfaced with bold artwork and clean categorisation.",
   errorLoadMovies: "Unable to load movies right now.",
   errorSearchUnavailable: "Search is unavailable right now.",
   errorLoadDetails: "Unable to load movie details.",
@@ -80,5 +64,3 @@ export const APP_COPY = {
 };
 
 export const SEARCH_MIN_CHARACTERS = 2;
-
-export const GITHUB_PAGE_URL = "https://github.com/farzanuddin";

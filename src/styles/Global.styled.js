@@ -1,6 +1,6 @@
-import * as styled from "styled-components";
+import { createGlobalStyle } from "styled-components";
 
-export const GlobalStyles = styled.createGlobalStyle`
+export const GlobalStyles = createGlobalStyle`
   html {
     font-size: 65%;
     font-family: ${({ theme }) => theme.fonts.body};

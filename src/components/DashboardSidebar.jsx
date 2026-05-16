@@ -22,6 +22,29 @@ const iconMap = {
   support: QuestionCircleOutlined,
 };
 
+const CONTINUE_WATCHING_ITEMS = [
+  {
+    title: "The Rookie",
+    label: "S7.E18",
+    progress: "68%",
+    backdrop: "/2m1Mu0xPj4SikiqkaolTRUcNtWH.jpg",
+  },
+  {
+    title: "Lilo & Stitch",
+    label: "44min",
+    progress: "43%",
+    backdrop: "/7Zx3wDG5bBtcfk8lcnCWDOLM4Y4.jpg",
+  },
+  {
+    title: "Whiplash",
+    label: "1h 18min",
+    progress: "73%",
+    backdrop: "/wbQa0EnWUyRzQ5d1pHLNRlmsCUP.jpg",
+  },
+];
+
+const getProgressValue = (progress) => Math.min(Number.parseInt(progress, 10) || 0, 100);
+
 const SidebarGroup = ({ items, onNavigate }) => (
   <NavList>
     {items.map((item) => {
@@ -40,7 +63,6 @@ const SidebarGroup = ({ items, onNavigate }) => (
 
 const StaticCWCard = ({ title, label, progress, backdrop }) => {
   const imageUrl = getImageUrl(backdrop);
-  const progressValue = Number.parseInt(progress, 10) || 0;
 
   return (
     <CWCard style={{ backgroundImage: `url(${imageUrl})` }}>
@@ -53,7 +75,7 @@ const StaticCWCard = ({ title, label, progress, backdrop }) => {
             <path d="M1 0.5L9 6L1 11.5V0.5Z" />
           </svg>
         </CWPlayBtn>
-        <CWMetaPill $progress={Math.min(progressValue, 100)}>
+        <CWMetaPill $progress={getProgressValue(progress)}>
           <CWLabel>{label}</CWLabel>
           <CWPercent>{progress}</CWPercent>
         </CWMetaPill>
@@ -63,26 +85,8 @@ const StaticCWCard = ({ title, label, progress, backdrop }) => {
 };
 
 export const DashboardSidebar = ({ primaryLinks, onNavigate, onClose }) => {
-  const staticItems = [
-    {
-      title: "The Rookie",
-      label: "S7.E18",
-      progress: "68%",
-      backdrop: "/2m1Mu0xPj4SikiqkaolTRUcNtWH.jpg",
-    },
-    {
-      title: "Lilo & Stitch",
-      label: "44min",
-      progress: "43%",
-      backdrop: "/7Zx3wDG5bBtcfk8lcnCWDOLM4Y4.jpg",
-    },
-    {
-      title: "Whiplash",
-      label: "1h 18min",
-      progress: "73%",
-      backdrop: "/wbQa0EnWUyRzQ5d1pHLNRlmsCUP.jpg",
-    },
-  ];
+  const mainLinks = primaryLinks.slice(0, 4);
+  const secondaryLinks = primaryLinks.slice(4);
 
   return (
     <Sidebar>
@@ -98,16 +102,16 @@ export const DashboardSidebar = ({ primaryLinks, onNavigate, onClose }) => {
         ) : null}
       </SidebarHeader>
       <SidebarStack>
-        <SidebarGroup items={primaryLinks.slice(0, 4)} onNavigate={onNavigate} />
+        <SidebarGroup items={mainLinks} onNavigate={onNavigate} />
         <NavDivider />
-        <SidebarGroup items={primaryLinks.slice(4)} onNavigate={onNavigate} />
+        <SidebarGroup items={secondaryLinks} onNavigate={onNavigate} />
       </SidebarStack>
 
       <ContinueWatchingSection>
         <CWHeader>{APP_COPY.sidebarLibraryTitle}</CWHeader>
         <CWList>
-          {staticItems.map((item, i) => (
-            <StaticCWCard key={i} {...item} />
+          {CONTINUE_WATCHING_ITEMS.map((item) => (
+            <StaticCWCard key={item.title} {...item} />
           ))}
         </CWList>
       </ContinueWatchingSection>

@@ -5,7 +5,6 @@ import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { MediaCard } from "./MediaCard";
 
 export const MediaShelf = ({ sectionKey, title, items, onSelectMovie }) => {
-  const showProgress = sectionKey === "continueWatching";
   const showHeader = sectionKey !== "actionMovies";
   const rowRef = useRef(null);
 
@@ -35,13 +34,12 @@ export const MediaShelf = ({ sectionKey, title, items, onSelectMovie }) => {
         </ShelfHeader>
       ) : null}
 
-      <CardRow ref={rowRef} $showProgress={showProgress}>
+      <CardRow ref={rowRef}>
         {items.map((movie) => (
           <MediaCard
             key={movie.id}
             movie={movie}
             onSelectMovie={onSelectMovie}
-            showProgress={showProgress}
           />
         ))}
       </CardRow>

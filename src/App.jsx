@@ -8,7 +8,6 @@ import {
   DASHBOARD_SECTIONS,
   FEATURED_COLLECTION,
   SEARCH_MIN_CHARACTERS,
-  SIDEBAR_LIBRARY_LINKS,
   SIDEBAR_PRIMARY_LINKS,
 } from "./constants";
 import {
@@ -78,6 +77,7 @@ const App = () => {
 
   const bodyOverflowRef = useRef(null);
   const topAreaRef = useRef(null);
+  const searchRequestRef = useRef(0);
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -124,11 +124,6 @@ const App = () => {
           ),
         ]);
 
-        const staticContinueWatchingIds = [20526, 673, 68734, 76341];
-        const staticContinueWatching = await Promise.all(
-          staticContinueWatchingIds.map((id) => getMovieDetails(id))
-        );
-
         if (!isMounted) {
           return;
         }
@@ -149,13 +144,6 @@ const App = () => {
         );
 
         const mappedShelves = DASHBOARD_SECTIONS.map((section, index) => {
-          if (section.key === "continueWatching") {
-            return {
-              ...section,
-              items: staticContinueWatching.filter(Boolean),
-            };
-          }
-
           const limit = 10;
 
           return {
@@ -207,11 +195,14 @@ const App = () => {
     }
 
     const timeoutId = window.setTimeout(() => {
+      const requestId = searchRequestRef.current + 1;
+      searchRequestRef.current = requestId;
+
       (async () => {
         try {
           setSearchState((currentState) => ({ ...currentState, loading: true, error: "" }));
           const results = await searchContent(trimmedQuery, selectedSearchMedia);
-          if (isCancelled) return;
+          if (isCancelled || requestId !== searchRequestRef.current) return;
           startTransition(() => {
             setSearchState({
               loading: false,
@@ -220,7 +211,7 @@ const App = () => {
             });
           });
         } catch (error) {
-          if (isCancelled) return;
+          if (isCancelled || requestId !== searchRequestRef.current) return;
           setSearchState({
             loading: false,
             error: error.message || APP_COPY.errorSearchUnavailable,
@@ -302,10 +293,7 @@ const App = () => {
         <AppContainer $isCardMode={isCardMode}>
           <DashboardShell>
             <SidebarColumn>
-              <DashboardSidebar
-                primaryLinks={SIDEBAR_PRIMARY_LINKS}
-                libraryLinks={SIDEBAR_LIBRARY_LINKS}
-              />
+              <DashboardSidebar primaryLinks={SIDEBAR_PRIMARY_LINKS} />
             </SidebarColumn>
             <MainPanel>
               <TopArea ref={topAreaRef}>
@@ -422,17 +410,15 @@ const App = () => {
                     </GenreNavGroup>
                   </GenreFilterBar>
 
-                  {shelves
-                    .filter((section) => section.key !== "continueWatching")
-                    .map((section) => (
-                      <MediaShelf
-                        key={section.key}
-                        sectionKey={section.key}
-                        title={section.title}
-                        items={section.items}
-                        onSelectMovie={handleOpenMovieDetails}
-                      />
-                    ))}
+                  {shelves.map((section) => (
+                    <MediaShelf
+                      key={section.key}
+                      sectionKey={section.key}
+                      title={section.title}
+                      items={section.items}
+                      onSelectMovie={handleOpenMovieDetails}
+                    />
+                  ))}
                 </ContentStack>
               ) : null}
             </MainPanel>
@@ -446,7 +432,6 @@ const App = () => {
           >
             <DashboardSidebar
               primaryLinks={SIDEBAR_PRIMARY_LINKS}
-              libraryLinks={SIDEBAR_LIBRARY_LINKS}
               onNavigate={() => setIsMobileSidebarOpen(false)}
               onClose={() => setIsMobileSidebarOpen(false)}
             />

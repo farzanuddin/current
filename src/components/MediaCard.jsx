@@ -30,7 +30,6 @@ export const MediaCard = ({ movie, onSelectMovie }) => {
 MediaCard.propTypes = {
   movie: PropTypes.object.isRequired,
   onSelectMovie: PropTypes.func.isRequired,
-  showProgress: PropTypes.bool,
 };
 
 const Card = styled.button`

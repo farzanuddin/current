@@ -12,6 +12,8 @@ import {
 } from "@ant-design/icons";
 import { getImageUrl } from "../api";
 
+const CONTINUE_WATCHING_IDS = new Set([20526, 673, 68734, 76341]);
+
 export const MovieDetailsDrawer = ({
   isOpen,
   onClose,
@@ -23,12 +25,16 @@ export const MovieDetailsDrawer = ({
 }) => {
   const backdropUrl = getImageUrl(movie?.backdrop_path || movie?.poster_path);
   const theme = useTheme();
+  const heroBackground = `linear-gradient(
+    180deg,
+    ${theme.alpha.dark06} 0%,
+    ${theme.alpha.dark72} 100%
+  ), url(${backdropUrl})`;
   const trailerUrl = movie?.trailer?.key
     ? `https://www.youtube.com/watch?v=${movie.trailer.key}`
     : "";
-  const continueWatchingIds = [20526, 673, 68734, 76341];
-  const showContinueWatching = movie && continueWatchingIds.includes(movie.id);
-  const showWatchNow = movie && !continueWatchingIds.includes(movie.id);
+  const showContinueWatching = movie && CONTINUE_WATCHING_IDS.has(movie.id);
+  const showWatchNow = movie && !CONTINUE_WATCHING_IDS.has(movie.id);
 
   return (
     <Drawer
@@ -52,11 +58,7 @@ export const MovieDetailsDrawer = ({
 
         {!isLoading && movie ? (
           <>
-            <HeroImage
-              style={{
-                backgroundImage: `linear-gradient(180deg, ${theme.alpha.dark06} 0%, ${theme.alpha.dark72} 100%), url(${backdropUrl})`,
-              }}
-            >
+            <HeroImage style={{ backgroundImage: heroBackground }}>
               <ScoreBadge>
                 <StarFilled />
                 {movie.vote_average ? movie.vote_average.toFixed(1) : "NR"}
@@ -121,7 +123,11 @@ export const MovieDetailsDrawer = ({
                       <CastCard key={person.id}>
                         <CastAvatar
                           style={{
-                            backgroundImage: `linear-gradient(180deg, ${theme.alpha.dark06} 0%, ${theme.alpha.dark32} 100%), url(${getImageUrl(person.profile_path)})`,
+                            backgroundImage: `linear-gradient(
+                              180deg,
+                              ${theme.alpha.dark06} 0%,
+                              ${theme.alpha.dark32} 100%
+                            ), url(${getImageUrl(person.profile_path)})`,
                           }}
                         />
                         <div>

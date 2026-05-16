@@ -17,6 +17,11 @@ export const SearchResultsPanel = ({
   const hasQuery = query.trim().length > 0;
   const canSearch = query.trim().length >= minCharacters;
   const theme = useTheme();
+  const getPosterBackground = (movie) => `linear-gradient(
+    180deg,
+    ${theme.alpha.dark06} 0%,
+    ${theme.alpha.dark32} 100%
+  ), url(${getImageUrl(movie.poster_path || movie.backdrop_path)})`;
 
   if (!hasQuery) {
     return null;
@@ -24,7 +29,6 @@ export const SearchResultsPanel = ({
 
   return (
     <Panel>
-
       {!canSearch ? <PanelText>{hint}</PanelText> : null}
       {canSearch && isLoading ? (
         <PanelText>
@@ -38,10 +42,13 @@ export const SearchResultsPanel = ({
       {canSearch && !isLoading && !error && results.length > 0 ? (
         <ResultsList>
           {results.map((movie) => (
-            <ResultButton key={movie.id} onClick={() => onSelectMovie(movie)}>
+            <ResultButton
+              key={`${movie.media_type || "movie"}-${movie.id}`}
+              onClick={() => onSelectMovie(movie)}
+            >
               <Poster
                 style={{
-                  backgroundImage: `linear-gradient(180deg, ${theme.alpha.dark06} 0%, ${theme.alpha.dark32} 100%), url(${getImageUrl(movie.poster_path || movie.backdrop_path)})`,
+                  backgroundImage: getPosterBackground(movie),
                 }}
               />
               <ResultBody>

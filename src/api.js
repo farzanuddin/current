@@ -2,6 +2,7 @@ import axios from "axios";
 import { AUTH_KEY, IMAGE_URL_BASE, URL_BASE } from "./constants";
 
 const cache = {};
+const pendingRequests = {};
 
 const buildEndpoint = (endpoint, params = {}) => {
   const searchParams = new URLSearchParams();
@@ -17,7 +18,7 @@ const buildEndpoint = (endpoint, params = {}) => {
   return `${endpoint}${searchParams.size ? `?${searchParams.toString()}` : ""}`;
 };
 
-export const getDataFromAPI = async (endpoint, params = {}) => {
+const getDataFromAPI = async (endpoint, params = {}) => {
   try {
     if (!AUTH_KEY) {
       throw new Error("Missing VITE_TMDB_AUTH_KEY environment variable.");
@@ -27,6 +28,10 @@ export const getDataFromAPI = async (endpoint, params = {}) => {
 
     if (cache[fullEndpoint]) {
       return cache[fullEndpoint];
+    }
+
+    if (pendingRequests[fullEndpoint]) {
+      return await pendingRequests[fullEndpoint];
     }
 
     const options = {
@@ -39,7 +44,8 @@ export const getDataFromAPI = async (endpoint, params = {}) => {
 
     const constructedUrl = URL_BASE + fullEndpoint;
 
-    const response = await axios.get(constructedUrl, options);
+    pendingRequests[fullEndpoint] = axios.get(constructedUrl, options);
+    const response = await pendingRequests[fullEndpoint];
 
     if (response.status !== 200) {
       throw new Error(`Failed to fetch data. Status: ${response.status}`);
@@ -47,55 +53,37 @@ export const getDataFromAPI = async (endpoint, params = {}) => {
 
     cache[fullEndpoint] = response.data;
     return response.data;
-  } catch (error) {
-    console.error(`Error fetching data from ${endpoint}`, error.message);
-    throw error;
+  } finally {
+    delete pendingRequests[buildEndpoint(endpoint, params)];
   }
 };
 
-const mapGenreIdsToNames = async (genreIds, mediaType = "movie") => {
-  try {
-    const genreResponse = await getDataFromAPI(`/genre/${mediaType}/list`);
+const getGenreMap = async (mediaType = "movie") => {
+  const genreResponse = await getDataFromAPI(`/genre/${mediaType}/list`);
 
-    const genreMap = new Map(genreResponse?.genres?.map((genre) => [genre.id, genre.name]));
-
-    const mappedGenres = genreIds?.map((genreId) => ({
-      id: genreId,
-      name: genreMap.get(genreId),
-    }));
-
-    return mappedGenres;
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
+  return new Map(genreResponse?.genres?.map((genre) => [genre.id, genre.name]));
 };
 
 export const getMoviesWithGenres = async (endpoint, options = {}, mediaType = "movie") => {
-  try {
-    const response = await getDataFromAPI(endpoint, options);
+  const response = await getDataFromAPI(endpoint, options);
 
-    if (!response || !response.results) {
-      throw new Error("Invalid response format");
-    }
-
-    const genreIds = [...new Set(response.results.flatMap((movie) => movie.genre_ids))];
-    const mappedGenres = await mapGenreIdsToNames(genreIds, mediaType);
-    const moviesWithGenres = response?.results?.map((movie) => ({
-      ...movie,
-      genres: movie?.genre_ids?.map((genreId) =>
-        mappedGenres.find((genre) => genre.id === genreId)
-      ),
-    }));
-
-    return { ...response, results: moviesWithGenres };
-  } catch (error) {
-    console.error(error);
-    return;
+  if (!response || !response.results) {
+    throw new Error("Invalid response format");
   }
+
+  const genreMap = await getGenreMap(mediaType);
+  const moviesWithGenres = response?.results?.map((movie) => ({
+    ...movie,
+    genres: movie?.genre_ids?.map((genreId) => ({
+      id: genreId,
+      name: genreMap.get(genreId),
+    })),
+  }));
+
+  return { ...response, results: moviesWithGenres };
 };
 
-export const searchMovies = async (query) => {
+const searchMovies = async (query) => {
   const sanitizedQuery = query?.trim();
 
   if (!sanitizedQuery) {
@@ -185,6 +173,10 @@ export const getContentDetails = async (item) => {
   });
 
   const runtime = mediaType === "tv" ? response?.episode_run_time?.[0] : response?.runtime;
+  const trailer =
+    response?.videos?.results?.find(
+      (video) => video.site === "YouTube" && video.type === "Trailer"
+    ) || null;
 
   return {
     ...response,
@@ -194,11 +186,12 @@ export const getContentDetails = async (item) => {
     runtime,
     genres: response?.genres || [],
     cast: response?.credits?.cast?.slice(0, 6) || [],
-    trailer: response?.videos?.results?.find((video) => video.site === "YouTube" && video.type === "Trailer") || null,
+    trailer,
   };
 };
 
-export const getMovieDetails = async (movieId) => getContentDetails({ id: movieId, media_type: "movie" });
+export const getMovieDetails = async (movieId) =>
+  getContentDetails({ id: movieId, media_type: "movie" });
 
 export const getImageUrl = (path) => {
   if (!path) {
@@ -206,19 +199,4 @@ export const getImageUrl = (path) => {
   }
 
   return `${IMAGE_URL_BASE}${path}`;
-};
-
-export const mapActorDetails = async (actorId) => {
-  try {
-    const res = await getDataFromAPI(`/person/${actorId}`);
-    const mappedActorDetails = {
-      name: res.name,
-      birth: res.place_of_birth,
-      profile: res.profile_path,
-      popularity: res.popularity,
-    };
-    return mappedActorDetails;
-  } catch (error) {
-    console.error(error);
-  }
 };
