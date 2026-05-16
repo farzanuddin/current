@@ -13,6 +13,8 @@ import PropTypes from "prop-types";
 import { APP_COPY } from "../constants";
 import { getImageUrl } from "../api";
 
+const logoUrl = `${import.meta.env.BASE_URL}logo.svg`;
+
 const iconMap = {
   home: HomeFilled,
   heart: HeartOutlined,
@@ -92,7 +94,7 @@ export const DashboardSidebar = ({ primaryLinks, onNavigate, onClose }) => {
     <Sidebar>
       <SidebarHeader>
         <BrandLockup>
-          <BrandLogo src="/logo.svg" alt={APP_COPY.appLogoAlt} />
+          <BrandLogo src={logoUrl} alt={APP_COPY.appLogoAlt} />
           <span>{APP_COPY.brand}</span>
         </BrandLockup>
         {onClose ? (
