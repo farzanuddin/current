@@ -33,7 +33,6 @@ frontend concepts: a dark glassy UI with responsive card-mode layouts and live r
 | [Ant Design Icons](https://ant.design/components/icon/)                      | ^5.2.6  | Icon system                |
 | [React Modern Drawer](https://github.com/Farzin-Firoozi/react-modern-drawer) | ^1.2.2  | Slide-out drawer UI        |
 | [PropTypes](https://github.com/facebook/prop-types)                          | ^15.8.1 | Runtime prop type checking |
-| [ESLint](https://eslint.org/)                                                | ^8.55.0 | Code linting               |
 
 ## TMDB API Note
 
